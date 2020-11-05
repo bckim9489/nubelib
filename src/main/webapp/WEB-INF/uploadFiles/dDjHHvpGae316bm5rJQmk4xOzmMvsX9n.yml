@@ -1,0 +1,26 @@
+#Server
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+
+#Database
+spring:
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:log4jdbc:oracle:thin:@192.168.0.250:1521:orcl
+    username: student
+    password: student00
+    #Log
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+   #View
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+
+#mybatis
+mybatis:
+  config-location: classpath:mybatis-config.xml
+  configuration: map-underscore-to-camel-case:true

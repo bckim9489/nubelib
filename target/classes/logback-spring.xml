@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<!-- Created By yeoseong_yoon -->
+	<!-- 로그 경로 변수 선언 -->
+	<property name="LOG_DIR" value="/limp/webapps/logs" />
+	<property name="LOG_PATH" value="${LOG_DIR}/katechSys.log" />
+	<property name="ARCHIVED" value="${LOG_DIR}/archived" />
+ 	<property name="LOG_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss}][%p]: %c - %m%n" />
+
+
+	<!-- Console에 찍힐 로그 -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>${LOG_PATTERN}</Pattern>
+        </layout>
+    </appender>
+
+	<!-- Rolling File Appender 파일로 저장-->
+	<appender name="ROLLING_FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 파일 경로 -->
+		<file>${LOG_PATH}</file>
+		<!-- 출력패턴 -->
+		<encoder>
+			<pattern>${LOG_PATTERN}</pattern>
+		</encoder>
+		<!-- Rolling 정책 -->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- .gz,.zip 등을 넣으면 자동으로 일자별 로그파일 압축 -->
+			<fileNamePattern>${ARCHIVED}/katechSys.%d{yyyy-MM-dd}.%i.log.gz
+			</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<!-- 파일당 최고 용량 10MB -->
+				<maxFileSize>10MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<!-- 일자별 로그파일 최대 보관주기(일단위) 만약 해당 설정일 이상된 파일은 자동으로 제거 -->
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+	</appender>
+
+	<logger name="com.winitech.katechSys" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="ROLLING_FILE" />
+    </logger>
+<!--     <logger name="com.winitech.katechSys" level="INFO"> -->
+
+<!--     </logger> -->
+
+	<!-- mybatis 쿼리 로그  -->
+	<logger name="jdbc" level="OFF" />
+
+	<logger name="jdbc.sqlonly" level="OFF" />
+
+	<logger name="jdbc.sqltiming" level="DEBUG" additivity="false">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="ROLLING_FILE" />
+	</logger>
+
+	<logger name="jdbc.audit" level="OFF" />
+
+	<logger name="jdbc.resultset" level="OFF" />
+
+	<logger name="jdbc.resultsettable" level="DEBUG" additivity="false">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="ROLLING_FILE" />
+	</logger>
+
+	<logger name="jdbc.connection" level="OFF" />
+
+	<root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="ROLLING_FILE" />
+    </root>
+</configuration>
+
+

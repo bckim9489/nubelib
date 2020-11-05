@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.winitech.katechSys.module.web.mybatis.mapper.SelectCodeMapper">
+<!-- 지도 중심 기상 정보 조회 -->
+<select id="selectCode" resultMap="GetSelectCodeListResponseDTO" parameterType="com.winitech.katechSys.module.web.mybatis.entity.GetSelectCodeListEntity">
+	SELECT
+		   CMMN_CODE_ID AS CODE
+		 , CODE_NM AS CODENM
+	FROM TCM_CMMN_CODE
+	WHERE 1=1
+	AND UPPER_CODE_ID = #{code}
+	<if test='useat != null and !useat.equals("")'>
+	AND USE_AT = #{useat}
+	</if>
+</select>
+
+<resultMap id="GetSelectCodeListResponseDTO" type="com.winitech.katechSys.module.web.model.response.GetSelectCodeListResponseDTO">
+<result property="code" column="code"/>
+<result property="codenm" column="codenm"/>
+</resultMap>
+
+</mapper>

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.winitech.katechSys.module.web.mybatis.mapper.BoardMapper">
+    <sql id="selectBoardListWhere">
+        <if test='title != null and title != ""' >
+            AND title LIKE '%'||#{title}||'%'
+        </if>
+
+        <if test='contents != null and contents != ""' >
+            AND contents LIKE '%'||#{contents}||'%'
+        </if>
+    </sql>
+
+    <sql id="fileInsertChoose">
+    	<if test='bno != -1 and bno != "-1"' >
+            , #{bno}
+        </if>
+        <if test='bno == -1 or bno == "-1"' >
+            , (SELECT NVL(MAX(BBSCTT_SN), 0) FROM is_bbsctt WHERE bbs_id =#{bbsId})
+        </if>
+    </sql>
+	<select id="selectBoardList" resultMap="GetBoardListDTO" parameterType="com.winitech.katechSys.module.web.mybatis.entity.GetBoardListEntity">
+		(SELECT d.rnum
+		        , d.bbs_Id as bbsId
+		        , d.bbsctt_Sn as bbscttSn
+		        , d.title
+		        , d.wrter_Name
+		        , d.notice_Yn
+		        , TO_CHAR(d.reg_Dtime, 'YYYY-MM-DD HH24:MI:SS') AS reg_Dtime
+		FROM(SELECT ROWNUM AS rnum
+		           , c.*
+		    FROM(
+		         SELECT bbs_Id
+		                , bbsctt_Sn
+		                , title
+		                , wrter_Name
+		                , notice_Yn
+		                , reg_Dtime
+		            FROM is_bbsctt
+		            WHERE 1=1
+		              AND delete_Yn = 'N'
+		              AND notice_Yn = 'Y'
+		              AND bbs_Id=#{bbsId}
+		         ORDER BY reg_Dtime DESC
+		    ) c
+		) d
+		<![CDATA[
+		WHERE 1=1
+		  AND d.rnum <= 3
+		]]>
+		)
+		UNION ALL
+		(SELECT  b.rnum
+		        , b.bbs_Id as bbsId
+		        , b.bbsctt_Sn as bbscttSn
+		        , b.title
+		        , b.wrter_Name
+		        , b.notice_Yn
+		        , TO_CHAR(b.reg_Dtime, 'YYYY-MM-DD HH24:MI:SS') AS reg_Dtime
+		FROM(
+		    SELECT ROWNUM AS rnum
+		           , a.*
+		    FROM(
+		         SELECT bbs_Id
+		                , bbsctt_Sn
+		                , title
+		                , wrter_Name
+		                , notice_Yn
+		                , reg_Dtime
+		            FROM is_bbsctt
+		            WHERE 1=1
+		              AND delete_Yn = 'N'
+		              AND bbs_Id=#{bbsId}
+		              <include refid="selectBoardListWhere"/>
+		              ORDER BY reg_Dtime DESC
+		    ) a
+		) b
+		<![CDATA[
+		WHERE 1=1
+		  AND b.rnum > (#{page} - 1) * 10
+		  AND b.rnum <= #{page} * 10
+		]]>
+		)
+	</select>
+	<resultMap type="com.winitech.katechSys.module.web.model.response.GetBoardListDTO" id="GetBoardListDTO">
+<!-- 		<id property="bbscttSn" column="bbscttSn"/> -->
+<!-- 		<collection property="boardList" javaType="ArrayList" ofType="com.winitech.katechSys.module.web.model.response.BoardListModel"> -->
+			<result property="bbsId" 	 column="bbsId"/>
+			<result property="bbscttSn"  column="bbscttSn"/>
+			<result property="title" 	 column="title"/>
+			<result property="wrterName" column="wrter_Name"/>
+			<result property="noticeYn"  column="notice_Yn"/>
+			<result property="regDtime"  column="reg_Dtime"/>
+<!-- 		</collection> -->
+	</resultMap>
+	<select id="selectBoardListCnt" parameterType="com.winitech.katechSys.module.web.mybatis.entity.selectBoardCntEntity" resultType="int">
+		SELECT count(bbsctt_sn)
+		  FROM is_bbsctt
+		 WHERE 1=1
+  		   AND delete_Yn = 'N'
+		   AND bbs_Id=#{bbsId}
+		   <include refid="selectBoardListWhere"/>
+	</select>
+	<select id="selectBoardDetail" resultMap="GetBoardDetailDTO" parameterType="com.winitech.katechSys.module.web.mybatis.entity.GetBoardDetailEntity">
+		SELECT c.title
+		       , c.bbsctt_sn
+		       , c.contents
+		       , c.wrter_Name
+		       , c.notice_Yn
+		       , TO_CHAR(c.reg_Dtime, 'YYYY-MM-DD HH24:MI:SS') AS reg_Dtime
+		       , c.page_next
+		       , c.page_next_sj
+		       , c.page_perv
+		       , c.page_perv_sj
+               , filename
+               , fileoriname
+               , fno
+               , fileurl
+		FROM(   SELECT b.title
+		               , b.bbsctt_sn
+		               , b.contents
+		               , b.wrter_Name
+		               , b.notice_Yn
+		               , b.reg_Dtime
+		               , LAG(b.bbsctt_sn) OVER(ORDER BY b.rnum)  AS page_perv
+		               , LAG(b.title) OVER(ORDER BY b.rnum)  AS page_perv_sj
+		               , LEAD(b.bbsctt_sn) OVER(ORDER BY b.rnum) AS page_next
+		               , LEAD(b.title) OVER(ORDER BY b.rnum) AS page_next_sj
+		        FROM(select ROWNUM AS rnum
+		               , a.*
+		            FROM(SELECT title
+		                        , bbsctt_sn
+		                        , contents
+		                        , wrter_Name
+		                        , notice_Yn
+		                        , reg_Dtime
+		                   FROM is_bbsctt
+		                  WHERE 1=1
+		                    AND delete_Yn = 'N'
+		                    AND bbs_Id=#{bbsId}
+		               ORDER BY reg_Dtime DESC
+		        ) a
+		    )b
+		) c LEFT OUTER JOIN files ON bno = c.bbsctt_sn
+		WHERE 1=1
+		  AND c.bbsctt_sn = #{bbscttSn}
+	</select>
+	<resultMap type="com.winitech.katechSys.module.web.model.response.GetBoardDetailDTO" id="GetBoardDetailDTO">
+			<result property="title" 	 	column="title"/>
+			<result property="contents"  	column="contents"/>
+			<result property="wrterName" 	column="wrter_Name"/>
+			<result property="noticeYn"  	column="notice_Yn"/>
+			<result property="regDtime"  	column="reg_Dtime"/>
+			<result property="pageNext"  	column="page_next"/>
+			<result property="pagePerv"  	column="page_perv"/>
+			<result property="pageNextSj"   column="page_next_sj"/>
+			<result property="pagePervSj"   column="page_perv_sj"/>
+			<result property="fileName"  	column="fileName"/>
+			<result property="fno"  		column="fno"/>
+			<result property="fileOriName"  column="fileOriName"/>
+			<result property="fileUrl"  	column="fileUrl"/>
+	</resultMap>
+	<insert id="insertBoardWrite" parameterType="com.winitech.katechSys.module.web.mybatis.entity.SetBoardWriteEntity">
+		Insert Into is_bbsctt(
+		    bbs_id
+		    , bbsctt_sn
+		    , title
+		    , contents
+		    , wrter_name
+		    , ip
+		    , delete_yn
+		    , notice_yn
+		) values (
+		    #{bbsId}
+		    , (SELECT NVL(MAX(BBSCTT_SN), 0) + 1 FROM is_bbsctt WHERE bbs_id =#{bbsId})
+		    , #{title}
+		    , #{contents}
+		    , '관리자'
+		    , #{ip}
+		    , 'N'
+		    , #{noticeYn}
+		)
+	</insert>
+	<update id="updateBoardWrite" parameterType="com.winitech.katechSys.module.web.mybatis.entity.updateBoardWriteEntity">
+		UPDATE is_bbsctt
+		   SET title = #{title}
+		     , contents = #{contents}
+		     , notice_yn = #{noticeYn}
+		 WHERE 1=1
+		   AND bbs_id = #{bbsId}
+		   AND bbsctt_sn = #{bbscttSn}
+	</update>
+
+	<update id="deleteBoardWrite" parameterType="com.winitech.katechSys.module.web.mybatis.entity.deleteBoardWriteEntity">
+		UPDATE is_bbsctt
+		   SET delete_Yn = 'Y'
+		 WHERE 1=1
+		   AND bbs_id = #{bbsId}
+		   AND bbsctt_sn = #{bbscttSn}
+	</update>
+
+	<insert id="fileInsert" parameterType="com.winitech.katechSys.module.web.mybatis.entity.FileVO">
+		INSERT INTO FILES (
+			FNO
+			, BBSID
+			, FILENAME
+			, FILEORINAME
+			, FILEURL
+			, BNO
+		)
+		VALUES(
+			(SELECT NVL(MAX(FNO), 0)+1 FROM files)
+			, #{bbsId}
+			, #{fileName}
+			, #{fileOriName}
+			, #{fileUrl}
+			<include refid="fileInsertChoose"/>
+		)
+	</insert>
+	<update id="fileUpdate" parameterType="com.winitech.katechSys.module.web.mybatis.entity.FileVO">
+		UPDATE FILES
+		   SET FILENAME = #{fileName}
+		       , FILEORINAME = #{fileOriName}
+		       , FILEURL = #{fileUrl}
+		 WHERE 1=1
+		   AND BBSID = #{bbsId}
+		   AND BNO = #{bno}
+
+	</update>
+	<delete id="fileDelete" parameterType="String">
+		DELETE FILES
+		 WHERE BBSID = #{bbsId}
+		   AND BNO = #{bno}
+	</delete>
+
+	<select id="fileDetail" parameterType="String" resultType="com.winitech.katechSys.module.web.mybatis.entity.FileVO">
+		SELECT *
+    	FROM FILES
+    	WHERE BNO = #{bno}
+          AND BBSID = #{bbsId}
+
+	</select>
+</mapper>
