@@ -15,6 +15,10 @@
 		display: inline-block;
 		margin-left:10px;
 	}
+	div#target_station {
+		display: inline-block;
+	}
+
 </style>
 <div class="container">
 
@@ -25,7 +29,7 @@
 
 	<div class="div_right">
 	<form action="/mailSend" method="post">
-		<div align="center">
+		<div align="left">
       		도착지: <input type="text" id="dist" size="20" class="form-control>"/>
       		<input type="hidden" id="mail_address" name="address" size="120" style="width:70%;" class="form-control" >
 			<button type="button" name="search_btn" id="search_btn" class="">찾기</button>
@@ -45,28 +49,40 @@
 		level: 3
 	};
 	var map = new kakao.maps.Map(container, options);
-
-	if (navigator.geolocation) {
-
-	    // GeoLocation을 이용해서 접속 위치를 얻어옵니다
-	    navigator.geolocation.getCurrentPosition(function(position) {
-
-	        var lat = position.coords.latitude, // 위도
-	            lon = position.coords.longitude; // 경도
-
-	        var locPosition = new kakao.maps.LatLng(lat, lon) // 마커가 표시될 위치를 geolocation으로 얻어온 좌표로 생성합니다
-
-	        // 마커와 인포윈도우를 표시합니다
-	        displayMarker(locPosition);
-	        fn_busStop(lat,lon);
-	      });
-
-	} else { // HTML5의 GeoLocation을 사용할 수 없을때 마커 표시 위치와 인포윈도우 내용을 설정합니다
-
-	    var locPosition = new kakao.maps.LatLng(33.450701, 126.570667);
-
-	    displayMarker(locPosition);
+	
+	$(document).ready(function(){
+	
+		defaultSet();
+		setInterval(defaultSet, 15000);
+	});
+	
+	function defaultSet(){
+	
+	
+		if (navigator.geolocation) {
+	
+		    // GeoLocation을 이용해서 접속 위치를 얻어옵니다
+		    navigator.geolocation.getCurrentPosition(function(position) {
+	
+		        var lat = position.coords.latitude, // 위도
+		            lon = position.coords.longitude; // 경도
+	
+		        var locPosition = new kakao.maps.LatLng(lat, lon) // 마커가 표시될 위치를 geolocation으로 얻어온 좌표로 생성합니다
+	
+		        // 마커와 인포윈도우를 표시합니다
+		        displayMarker(locPosition);
+		        fn_busStop(lat,lon);
+	
+		      });
+	
+		} else { // HTML5의 GeoLocation을 사용할 수 없을때 마커 표시 위치와 인포윈도우 내용을 설정합니다
+	
+		    var locPosition = new kakao.maps.LatLng(33.450701, 126.570667);
+	
+		    displayMarker(locPosition);
+		}
 	}
+
 
 	// 지도에 마커와 인포윈도우를 표시하는 함수입니다
 	function displayMarker(locPosition, setFlag) {
@@ -110,16 +126,83 @@
 		});
 	}
 
+	function sortResults(result, prop, asc) {
+	    SortedResult = result.sort(function(a, b) {
+
+	    	 if (asc) {
+                 return (parseInt(a[prop]) > parseInt(b[prop])) ? 1 : ((parseInt(a[prop]) < parseInt(b[prop])) ? -1 : 0);
+             } else {
+                 return (parseInt(b[prop]) > parseInt(a[prop])) ? 1 : ((parseInt(b[prop]) < parseInt(a[prop])) ? -1 : 0);
+             }
+         });
+
+	    return SortedResult
+	}
+
+	function uniqueJson(data, target){
+		for(var i = 0; i<data.length; i++){
+			var tmp = data[i];
+			var tmpName = tmp[target];
+			for(var j = i+1; j<data.length; j++){
+				if(tmpName != data[j][target]){
+					continue;
+				} else {
+					data.splice(j,1);
+				}
+			}
+		}
+		return data;
+	}
+
+
+	function fn_setArrive(jdata){
+		var card = "";
+		$.each(jdata, function(key, value){
+			//card += "<td>";
+			for(var i in value){
+				if(i=="arrprevstationcnt"){
+					var chr ="<td >";
+					switch(value[i]){
+						case '1':
+							chr += "<span style='color:red;'>전";
+							break;
+						case '2':
+							chr += "<span style='color:red;'>전전";
+							break;
+						default :
+							chr += "<span>"+value[i] +"개 ";
+							break;
+					}
+					card += chr+" 정류장</span></td>";
+				} else {
+					card += "<td>"+value[i]+"</td> ";
+				}
+
+			}
+			//card +="</td>";
+		});
+		return card;
+	}
+
 	function fn_setStation(jdata){
 		var card = "";
 		var lat = "";
 		var lon = "";
+		card += "<table class='station' border=1>";
 		$.each(jdata, function(key, value){
+			card += "<tr>"
 			for(var i in value){
 
 				if(i=='nodenm'){
-					card +="<p class='"+i+"'>"+value[i]+"</p>";
+					card +="<th class='"+i+"'>"+value[i]+"</th>";
 				} else {
+					if(i=='nodeid'){
+						var arrData = fn_busArrive(22, value[i]);
+						var sortData = sortResults(arrData.arrive, "arrprevstationcnt", true);
+
+						var unqData = uniqueJson(sortData, "routeno");
+						card += fn_setArrive(unqData);
+					}
 					card +="<input type='hidden' class='"+i+"' value='"+value[i]+"'/>";
 				}
 				if(i == 'gpslati'){
@@ -128,7 +211,10 @@
 				if(i == 'gpslong'){
 					lon = value[i];
 				}
+
 			}
+			card +="</tr>";
+
 			var imageSrc = '../img/busMarker.png';
 		    var imageSize = new kakao.maps.Size(34, 39);
 			var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
@@ -140,6 +226,7 @@
 			});
 			marker.setMap(map);
 		});
+		card +="</table>";
 		$("#target_station").html(card);
 	}
 
@@ -167,7 +254,7 @@
 
 				var dataForm = {
 					dataName : "bus",
-					dataHeader : ['nodenm', 'gpslati', 'gpslong', 'nodeno']
+					dataHeader : ['nodenm', 'gpslati', 'gpslong', 'nodeid']
 				};
 
 				var option = {
@@ -175,15 +262,44 @@
 				};
 
 				var result = xmlParser(xmlData, dataForm, option); //common.js
+				console.log(result);
 				fn_setStation(result.bus);
 			}
 		});
+	}
+
+	function fn_busArrive(cityCode, nodeId){
+		var serviceKey = 'YjfGjp0gllE2eZVEJoCjPsIoCfTllyHJcw68Imthn4Q8SGbczqUX8HMhPBOIhXj73x+dkd5ZRAyRYy0Hx5ul+Q==';
+		var result;
+		$.ajax({
+			url: "http://openapi.tago.go.kr/openapi/service/ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList",
+			async: false,
+			data: {
+				"serviceKey" : serviceKey,
+				"nodeId" : nodeId,
+				"cityCode" : cityCode
+			},
+			type: "GET",
+			success: function(data){
+				var xmlData = $(data).find("item");
+				var dataForm = {
+						dataName : "arrive",
+						dataHeader : ["routeno", "arrprevstationcnt"]
+				};
+				result = xmlParser(xmlData, dataForm, "");
+			}
+		});
+		return result;
 	}
 
 	$("#search_btn").on("click", function(){
 		var srch_key = $("#dist").val();
 		fn_search(srch_key);
 	});
+	
+	$(function(){
+		
+	})
 </script>
 
 <%@include file="./common/footer.jsp" %>

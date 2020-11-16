@@ -10,7 +10,7 @@
  * }
  */
 function xmlParser(xmlData, dataForm, option){
-	if(!option || option=='undefined'){
+	if(!option || option == undefined){
 		option == "";
 	}
 
@@ -23,12 +23,21 @@ function xmlParser(xmlData, dataForm, option){
 		$(xmlData).each(function(){
 			var resultRow = {};
 			var currentData = $(this);
-			if(currentData.find(Object.keys(option)[0]).text() == option[Object.keys(option)]){
-				for(var key in dataFormHeader){
+			if(option != ""){
+				if(currentData.find(Object.keys(option)[0]).text() == option[Object.keys(option)]){
+					for(var key in dataFormHeader){
 						var findKey = dataFormHeader[key];
 						var value = currentData.find(findKey).text();
 						resultRow[findKey] = value;
 					}
+					result.push(resultRow);
+				}
+			} else {
+				for(var key in dataFormHeader){
+					var findKey = dataFormHeader[key];
+					var value = currentData.find(findKey).text();
+					resultRow[findKey] = value;
+				}
 				result.push(resultRow);
 			}
 		});
@@ -156,10 +165,10 @@ $(document).on('click','.newPage', function() {
 
 //-------------------------------그리드 테스트------------------------------------
 function jq_targetType(target,type){
-	var target_type = ""
+	var jq_type = "";
 	switch(type){
 		case 'id':
-			target_type = "#"+target;
+			jq_type = "#"+target;
 			break;
 		case 'class':
 			jq_type = "."+target;
@@ -168,10 +177,10 @@ function jq_targetType(target,type){
 			jq_type= "input[name="+target+"]";
 			break;
 		default :
-			target_type = "#"+target;
+			jq_type = "#"+target;
 			break;
 	}
-	return target_type;
+	return jq_type;
 }
 
 function tbl_head_create(head){
@@ -189,20 +198,35 @@ function tbl_colgroup_create(colgroup){
 	return card;
 }
 
-function tbl_create(tblName, target, type){
+/*
+ * data = {
+ * 		header : [_ColumnName1, _ColumnName2, ...],
+ * 		body : _Data,
+ *  	colgroup : {
+ *  		_Colgroup1 : SIZE,
+ *  		_Colgroup2 : SIZE,
+ *  		...
+ *  	}
+ * }
+ *
+ */
+function tbl_create(data, tblName, target, type){
 	var card = "";
 	var target_type = jq_targetType(target, type);
 
-	card += '<div class="">';
+	var colgroup = data.colgroup;
+	var head = data.header;
+	var body = data.body;
+
+	card += '<div class="tbl_Auto">';
 	card += '<table class="'+tblName+'" border="1" style="margin-left: auto; margin-right: auto;">';
 
-	card += tbl_colgroup_create();
-	card += tbl_head_create();
-	card += tbl_body_create();
+	card += tbl_colgroup_create(colgroup);
+	card += tbl_head_create(head);
+	card += tbl_body_create(body);
 
 	card += '</table>';
 	card += '</div>';
-
 
 	$(target_type).html(card);
 }

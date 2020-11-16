@@ -195,7 +195,7 @@
 					<li class="header nav_ul_li menual"><a href="/mapPage">지도</a></li>
 					<li class="header nav_ul_li menual"><a href="/chat">채팅</a></li>
 					<li class="header nav_ul_li menual"><a href="/booking">예매</a></li>
-					<li class="header nav_ul_li menual"><a href="/booking">코인</a></li>
+					<li class="header nav_ul_li menual"><a href="/coin">코인/계좌</a></li>
 					<div class="naver_crawling"></div>
 					<li class="header user_Info user_logout"><a href="/logout" style="color:gray;">로그아웃</a></li>
 					<li class="header user_Info user_info"><a href="" style="color:gray;">회원정보</a></li>
