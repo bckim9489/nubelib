@@ -83,7 +83,7 @@
 				callback : 'fn_GetList'
 			});
 
-			tbl_create('tbl_test', "target_test", 'id');
+			//tbl_create('tbl_test', "target_test", 'id');
     	});
 
    		$(document.body).delegate('#tbdy tr', 'click', function() {

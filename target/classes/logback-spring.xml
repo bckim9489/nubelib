@@ -3,7 +3,7 @@
 	<!-- Created By yeoseong_yoon -->
 	<!-- 로그 경로 변수 선언 -->
 	<property name="LOG_DIR" value="/limp/webapps/logs" />
-	<property name="LOG_PATH" value="${LOG_DIR}/katechSys.log" />
+	<property name="LOG_PATH" value="${LOG_DIR}/sbAchive.log" />
 	<property name="ARCHIVED" value="${LOG_DIR}/archived" />
  	<property name="LOG_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss}][%p]: %c - %m%n" />
 
@@ -27,7 +27,7 @@
 		<!-- Rolling 정책 -->
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<!-- .gz,.zip 등을 넣으면 자동으로 일자별 로그파일 압축 -->
-			<fileNamePattern>${ARCHIVED}/katechSys.%d{yyyy-MM-dd}.%i.log.gz
+			<fileNamePattern>${ARCHIVED}/sbAchive.%d{yyyy-MM-dd}.%i.log.gz
 			</fileNamePattern>
 			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
 				<!-- 파일당 최고 용량 10MB -->
@@ -38,11 +38,11 @@
 		</rollingPolicy>
 	</appender>
 
-	<logger name="com.winitech.katechSys" level="DEBUG" additivity="false">
+	<logger name="com.nubelib.sbAchive" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="ROLLING_FILE" />
     </logger>
-<!--     <logger name="com.winitech.katechSys" level="INFO"> -->
+<!--     <logger name="com.nubelib.sbAchive" level="INFO"> -->
 
 <!--     </logger> -->
 

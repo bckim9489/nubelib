@@ -9,10 +9,10 @@
 		<version>2.2.4.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.winitech</groupId>
-	<artifactId>katechSys</artifactId>
+	<groupId>com.nubelib</groupId>
+	<artifactId>sbAchive</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>katechSys</name>
+	<name>sbAchive</name>
 	<description>V2X 5G System</description>
 	<packaging>war</packaging>
 

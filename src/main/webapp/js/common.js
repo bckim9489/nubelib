@@ -161,8 +161,7 @@ $(document).on('click','.newPage', function() {
 	getPaging(__urlSet, __dataSet, __pageSet, page, __callback);
 });
 
-//-------------------------------페이지네이션 끝-----------------------------------
-
+//-------------------------------페이지네이션 끝----------------------------------
 //-------------------------------그리드 테스트------------------------------------
 function jq_targetType(target,type){
 	var jq_type = "";
@@ -183,29 +182,122 @@ function jq_targetType(target,type){
 	return jq_type;
 }
 
-function tbl_head_create(head){
+function tbl_head_create(data){
 	var card = "";
+
+	var index = data.header.index;
+	var name = data.header.name;
+	var hidden = data.header.hidden;
+	var optionSet = data.option;
+	var option = new Array();
+	for(var i = 0; i<optionSet.length; i++){
+		if(optionSet[i].target == 'head'){
+			var optionRow = {
+					index: optionSet[i].index,
+					value: optionSet[i].value,
+					style: optionSet[i].style
+			};
+			option.push(optionRow);
+		}
+	}
+
+	card += "<thead>";
+	card += "<tr>";
+	//'<th> class' add underscore between index name
+	for(var i in index){
+		card += "<th class = 'th_"+index[i]+"_'";
+		card += "style='";
+		if(hidden[i]){
+			card += "display:none;";
+		}
+		if(option.length > 0){
+			for(var j = 0; j<option.length; j++){
+				if(index[i] == option[j].index){
+					card += option[j].style;
+				}
+			}
+		}
+		card += "'>";
+		card += name[i];
+		card += "</th>";
+	}
+	card += "</tr>";
+	card += "</thead>";
 	return card;
 }
 
-function tbl_body_create(body){
+function tbl_body_create(data){
 	var card = "";
+	var index = data.header.index;
+	var hidden = data.header.hidden;
+	var dataList = data.body;
+	var optionSet = data.option;
+	var option = new Array();
+	for(var i = 0; i<optionSet.length; i++){
+		if(optionSet[i].target == 'body'){
+			var optionRow = {
+					index: optionSet[i].index,
+					value: optionSet[i].value,
+					style: optionSet[i].style
+			};
+			option.push(optionRow);
+		}
+	}
+
+	card += "<tbody>";
+	for (var i in dataList){
+		card += "<tr>";
+		for(var j = 0; j<index.length; j++){
+
+			card += "<td class ='td_"+index[j]+"_'";
+			card += "style='";
+			if(hidden[j]){
+				card += "display:none;";
+			}
+			if(option.length > 0){
+				for(var k = 0; k<option.length; k++){
+					if(index[j] == option[k].index){
+						if(dataList[i][index[j]] == option[k].value){
+							card += option[k].style;
+						}
+					}
+				}
+			}
+			card += "'>";
+			card += dataList[i][index[j]];
+			card += "</td>";
+		}
+		card += "</tr>";
+	}
+	card += "</tbody>";
+
 	return card;
 }
 
-function tbl_colgroup_create(colgroup){
+function tbl_colgroup_create(data){
 	var card = "";
 	return card;
 }
 
 /*
  * data = {
- * 		header : [_ColumnName1, _ColumnName2, ...],
+ * 		header : {
+ * 			index: [_ColumnName1, _ColumnName2, ...],
+ * 			name: [_ColumnName1, _ColumnName2, ...],
+ * 			hidden: [<0 or 1>, <0 or 1>, ...]
+ * 		}
  * 		body : _Data,
  *  	colgroup : {
  *  		_Colgroup1 : SIZE,
  *  		_Colgroup2 : SIZE,
  *  		...
+ *  	}
+ *  	option: {
+ *  		[
+ *  			{ index : '_ColumnName1', value : _ColumnValue1, target: '<body or head or all>', style : '_style:_styleValue;' },
+ *  			{ index : '_ColumnName2', value : _ColumnValue2, target: '<body or head or all>', style : '_style:_styleValue;' },
+ *  			...
+ *  		]
  *  	}
  * }
  *
@@ -214,16 +306,13 @@ function tbl_create(data, tblName, target, type){
 	var card = "";
 	var target_type = jq_targetType(target, type);
 
-	var colgroup = data.colgroup;
-	var head = data.header;
-	var body = data.body;
-
 	card += '<div class="tbl_Auto">';
 	card += '<table class="'+tblName+'" border="1" style="margin-left: auto; margin-right: auto;">';
-
-	card += tbl_colgroup_create(colgroup);
-	card += tbl_head_create(head);
-	card += tbl_body_create(body);
+	if(data.colgroup != null && data.colgroup != ""){
+		card += tbl_colgroup_create(data);
+	}
+	card += tbl_head_create(data);
+	card += tbl_body_create(data);
 
 	card += '</table>';
 	card += '</div>';
