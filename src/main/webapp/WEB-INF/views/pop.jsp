@@ -56,7 +56,6 @@
 					}
 
 					fn_resize();
-					tbl_create(data, "test", "acc_detail_list", "class");
 
 				},
 				error: function(e){

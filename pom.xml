@@ -13,7 +13,7 @@
 	<artifactId>sbAchive</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>sbAchive</name>
-	<description>V2X 5G System</description>
+	<description></description>
 	<packaging>war</packaging>
 
 	<properties>
@@ -137,11 +137,7 @@
     		<artifactId>jquery</artifactId>
     		<version>3.5.1</version>
 		</dependency>
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>12.1.0.1-atlassian-hosted</version>
-		</dependency>
+
 		    <!--Multipart File Up&Download -->
         <dependency>
             <groupId>org.apache.commons</groupId>
