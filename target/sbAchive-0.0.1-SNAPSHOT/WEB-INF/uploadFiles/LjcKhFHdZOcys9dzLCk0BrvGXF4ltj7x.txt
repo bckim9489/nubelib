@@ -1,0 +1,28 @@
+	private int bbsId;
+	private int bbscttSn;
+    private String title;
+    private String contents;
+    private String wrterName;
+    private String noticeYn;
+    private String deleteYn;
+    private String ip;
+    private String creatorId;
+    private String createdDate;
+    private String updaterId;
+    private String updatedDate;
+
+------------------------------------------------------
+
+Insert Into is_bbsctt(
+    bbs_id
+    , bbsctt_sn
+    , title
+    , ip
+    , delete_yn
+) values (
+    'bbs_test1'
+    , (SELECT NVL(MAX(BBSCTT_SN), 0) + 1 FROM is_bbsctt WHERE bbs_id ='bbs_test1')
+    , '테스트중' 
+    , '0.0.0.0'
+    , 'N'
+)
